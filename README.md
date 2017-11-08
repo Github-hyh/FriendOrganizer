@@ -1,0 +1,2 @@
+# FriendOrganizer
+WPF MVVM
