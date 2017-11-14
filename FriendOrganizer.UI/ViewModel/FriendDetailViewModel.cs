@@ -76,9 +76,11 @@ namespace FriendOrganizer.UI.ViewModel
                 });
         }
 
-        public async Task LoadAsync(int friendId)
+        public async Task LoadAsync(int? friendId)
         {
-            var friend = await _friendRespository.GetByIdAsync(friendId);
+            var friend = friendId.HasValue 
+                ? await _friendRespository.GetByIdAsync(friendId.Value)
+                : CreateNewFriend();
 
             Friend = new FriendWrapper(friend);
             Friend.PropertyChanged += (s, e) =>
@@ -93,6 +95,13 @@ namespace FriendOrganizer.UI.ViewModel
                     }
                 };
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+        }
+
+        private Friend CreateNewFriend()
+        {
+            var friend = new Friend();
+            _friendRespository.Add(friend);
+            return friend;
         }
         
     }
