@@ -36,6 +36,12 @@ namespace FriendOrganizer.DataAccess.Migrations
                 new ProgrammingLanguage { Name = "Swift" },
                 new ProgrammingLanguage { Name = "Python" }
                 );
+
+            context.SaveChanges();
+
+            context.FriendPhoneNumbers.AddOrUpdate(
+                pn => pn.Number,
+                new FriendPhoneNumber { Number = "013882089499", FriendId = context.Friends.First().Id });
         }
     }
 }
