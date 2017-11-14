@@ -37,5 +37,11 @@ namespace FriendOrganizer.UI.Data.Repositories
         {
             _context.Friends.Add(friend);
         }
+
+
+        public void Delete(Friend friend)
+        {
+            _context.Friends.Remove(friend);
+        }
     }
 }

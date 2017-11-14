@@ -10,6 +10,7 @@ using FriendOrganizer.UI.Event;
 using System.Windows.Input;
 using Prism.Commands;
 using FriendOrganizer.UI.Wrapper;
+using FriendOrganizer.UI.View.Services;
 
 namespace FriendOrganizer.UI.ViewModel
 {
@@ -19,8 +20,10 @@ namespace FriendOrganizer.UI.ViewModel
         private IEventAggregator _eventAggregator;
         private FriendWrapper _friend;
         private bool _hasChanges;
+        private IMessageDialogService _messageDialogService;
 
         public ICommand SaveCommand { get; private set; }
+        public ICommand DeleteCommand { get; private set; }
 
         public FriendWrapper Friend
         {
@@ -50,13 +53,26 @@ namespace FriendOrganizer.UI.ViewModel
         }
 
         public FriendDetailViewModel(IFriendRespository friendDataService,
-            IEventAggregator eventAggregator)
+            IEventAggregator eventAggregator,
+            IMessageDialogService messageDialogService)
         {
             _friendRespository = friendDataService;
             _eventAggregator = eventAggregator;
+            _messageDialogService = messageDialogService;
 
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
+            DeleteCommand = new DelegateCommand(OnDeleteExecute);
+        }
 
+        private async void OnDeleteExecute()
+        {
+            var result = _messageDialogService.ShowOkCancelDialog(string.Format("Do you really want to delete {0} {1} ?", Friend.LastName, Friend.FirstName), "Question");
+            if (result == MessageDialogResult.Ok)
+            {
+                _friendRespository.Delete(Friend.Model);
+                await _friendRespository.SaveAsync();
+                _eventAggregator.GetEvent<AfterFriendDeleteEvent>().Publish(Friend.Id);
+            }
         }
 
         private bool OnSaveCanExecute()
@@ -95,6 +111,11 @@ namespace FriendOrganizer.UI.ViewModel
                     }
                 };
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
+            if (Friend.Id == 0)
+            {
+                //Little trick to trigger the validation
+                Friend.FirstName = "";
+            }
         }
 
         private Friend CreateNewFriend()
@@ -103,6 +124,5 @@ namespace FriendOrganizer.UI.ViewModel
             _friendRespository.Add(friend);
             return friend;
         }
-        
     }
 }
