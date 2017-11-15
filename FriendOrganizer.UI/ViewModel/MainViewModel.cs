@@ -18,6 +18,7 @@ namespace FriendOrganizer.UI.ViewModel
     {
         private IEventAggregator _eventAggregator;
         private Func<IFriendDetailViewModel> _friendDetailVMCreator;
+        private Func<IMeetingDetailViewModel> _meetingDetailVMCreator;
         private IDetailViewModel _detailViewModel;
         private IMessageDialogService _messageDialogService;
 
@@ -37,10 +38,12 @@ namespace FriendOrganizer.UI.ViewModel
 
         public MainViewModel(INavigationViewModel navigationVM, 
             Func<IFriendDetailViewModel> friendDetailVMCreator,
+            Func<IMeetingDetailViewModel> meetingDetailVMCreator,
             IEventAggregator eventAggregator,
             IMessageDialogService messageDialogService)
         {
             _friendDetailVMCreator = friendDetailVMCreator;
+            _meetingDetailVMCreator = meetingDetailVMCreator;
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<OpenDetailViewEvent>().Subscribe(OnOpenDetailView);
             _eventAggregator.GetEvent<AfterDetailDeletedEvent>().Subscribe(AfterDetailDeleted);
@@ -73,7 +76,8 @@ namespace FriendOrganizer.UI.ViewModel
                 case Constants.FriendDetailViewModel:
                     DetailViewModel = _friendDetailVMCreator();
                     break;
-                default:
+                case Constants.MeetingDetailViewModel:
+                    DetailViewModel = _meetingDetailVMCreator();
                     break;
             }
 

@@ -38,7 +38,7 @@ namespace FriendOrganizer.UI.Data.Repositories
             Context.Set<TEntity>().Add(model);
         }
 
-        public void Delete(TEntity model)
+        public void Remove(TEntity model)
         {
             Context.Set<TEntity>().Remove(model);
         }

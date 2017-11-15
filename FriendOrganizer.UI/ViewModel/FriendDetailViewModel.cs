@@ -19,7 +19,7 @@ namespace FriendOrganizer.UI.ViewModel
 {
     public class FriendDetailViewModel : DetailViewModelBase, IFriendDetailViewModel
     {
-        private IFriendRespository _friendRespository;
+        private IFriendRepository _friendRespository;
         private FriendWrapper _friend;
         private IMessageDialogService _messageDialogService;
         private IProgrammingLanguageLookupDataService _programmingLanguageLookupDataService;
@@ -56,7 +56,7 @@ namespace FriendOrganizer.UI.ViewModel
             }
         }
         
-        public FriendDetailViewModel(IFriendRespository friendDataService,
+        public FriendDetailViewModel(IFriendRepository friendDataService,
             IEventAggregator eventAggregator,
             IMessageDialogService messageDialogService,
             IProgrammingLanguageLookupDataService programmingLanguageLookupDataService):
@@ -102,7 +102,7 @@ namespace FriendOrganizer.UI.ViewModel
             var result = _messageDialogService.ShowOkCancelDialog(string.Format("Do you really want to delete {0} {1} ?", Friend.LastName, Friend.FirstName), "Question");
             if (result == MessageDialogResult.Ok)
             {
-                _friendRespository.Delete(Friend.Model);
+                _friendRespository.Remove(Friend.Model);
                 await _friendRespository.SaveAsync();
                 RaiseDetailDeletedEvent(Friend.Id);
             }
@@ -158,7 +158,7 @@ namespace FriendOrganizer.UI.ViewModel
             {
                 HasChanges = _friendRespository.HasChanges();
             }
-            if (e.PropertyName == "HasErrors")
+            if (e.PropertyName == Friend.HasErrors.GetType().Name)
             {
                 ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
             }

@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace FriendOrganizer.UI.Data.Repositories
 {
-    public class FriendRespository : GenericRepository<Friend, FriendOrganizerDbContext>, IFriendRespository
+    public class FriendRepository : GenericRepository<Friend, FriendOrganizerDbContext>, IFriendRepository
     {
 
-        public FriendRespository(FriendOrganizerDbContext context): 
+        public FriendRepository(FriendOrganizerDbContext context): 
             base(context)
         {
         }

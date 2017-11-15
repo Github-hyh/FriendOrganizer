@@ -7,8 +7,7 @@ using System.Threading.Tasks;
 
 namespace FriendOrganizer.UI.Data.Repositories
 {
-    public interface IFriendRespository : IGenericRepository<Friend>
+    public interface IMeetingRepository : IGenericRepository<Meeting>
     {
-        void RemovePhoneNumber(FriendPhoneNumber friendPhoneNumber);
     }
 }

@@ -13,6 +13,6 @@ namespace FriendOrganizer.UI.Data.Repositories
         bool HasChanges();
 
         void Add(T model);
-        void Delete(T model);
+        void Remove(T model);
     }
 }

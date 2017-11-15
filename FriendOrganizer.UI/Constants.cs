@@ -9,5 +9,6 @@ namespace FriendOrganizer.UI
     public class Constants
     {
         public const string FriendDetailViewModel = "FriendDetailViewModel";
+        public const string MeetingDetailViewModel = "MeetingDetailViewModel";
     }
 }
