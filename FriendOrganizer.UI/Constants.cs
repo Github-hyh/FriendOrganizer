@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FriendOrganizer.UI.ViewModel
+namespace FriendOrganizer.UI
 {
-    public interface IFriendDetailViewModel : IDetailViewModel
+    public class Constants
     {
-
+        public const string FriendDetailViewModel = "FriendDetailViewModel";
     }
 }

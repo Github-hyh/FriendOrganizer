@@ -17,17 +17,13 @@ using System.ComponentModel;
 
 namespace FriendOrganizer.UI.ViewModel
 {
-    public class FriendDetailViewModel : ViewModelBase, IFriendDetailViewModel
+    public class FriendDetailViewModel : DetailViewModelBase, IFriendDetailViewModel
     {
         private IFriendRespository _friendRespository;
-        private IEventAggregator _eventAggregator;
         private FriendWrapper _friend;
-        private bool _hasChanges;
         private IMessageDialogService _messageDialogService;
         private IProgrammingLanguageLookupDataService _programmingLanguageLookupDataService;
 
-        public ICommand SaveCommand { get; private set; }
-        public ICommand DeleteCommand { get; private set; }
         public ICommand RemovePhoneNumberCommand { get; private set; }
         public ICommand AddPhoneNumberCommand { get; private set; }
 
@@ -60,33 +56,16 @@ namespace FriendOrganizer.UI.ViewModel
             }
         }
         
-
-        public bool HasChanges
-        {
-            get { return _hasChanges; }
-            set
-            {
-                if (_hasChanges != value)
-                {
-                    _hasChanges = value;
-                    OnPropertyChanged();
-                    ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
-                }
-            }
-        }
-
         public FriendDetailViewModel(IFriendRespository friendDataService,
             IEventAggregator eventAggregator,
             IMessageDialogService messageDialogService,
-            IProgrammingLanguageLookupDataService programmingLanguageLookupDataService)
+            IProgrammingLanguageLookupDataService programmingLanguageLookupDataService):
+            base(eventAggregator)
         {
             _friendRespository = friendDataService;
-            _eventAggregator = eventAggregator;
             _messageDialogService = messageDialogService;
             _programmingLanguageLookupDataService = programmingLanguageLookupDataService;
 
-            SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
-            DeleteCommand = new DelegateCommand(OnDeleteExecute);
             AddPhoneNumberCommand = new DelegateCommand(OnAddPhoneNumberExecute);
             RemovePhoneNumberCommand = new DelegateCommand(OnRemovePhoneNumberExecute, OnRemovePhoneNumberCanExecute);
 
@@ -118,18 +97,18 @@ namespace FriendOrganizer.UI.ViewModel
             newNumber.Number = ""; // Trigger validation :-)
         }
 
-        private async void OnDeleteExecute()
+        protected override async void OnDeleteExecute()
         {
             var result = _messageDialogService.ShowOkCancelDialog(string.Format("Do you really want to delete {0} {1} ?", Friend.LastName, Friend.FirstName), "Question");
             if (result == MessageDialogResult.Ok)
             {
                 _friendRespository.Delete(Friend.Model);
                 await _friendRespository.SaveAsync();
-                _eventAggregator.GetEvent<AfterFriendDeleteEvent>().Publish(Friend.Id);
+                RaiseDetailDeletedEvent(Friend.Id);
             }
         }
 
-        private bool OnSaveCanExecute()
+        protected override bool OnSaveCanExecute()
         {
             return Friend != null 
                 && !Friend.HasErrors
@@ -137,19 +116,14 @@ namespace FriendOrganizer.UI.ViewModel
                 && HasChanges;
         }
 
-        private async void OnSaveExecute()
+        protected override async void OnSaveExecute()
         {
             await _friendRespository.SaveAsync();
             HasChanges = _friendRespository.HasChanges();
-            _eventAggregator.GetEvent<AfterFriendSavedEvent>().Publish(
-                new AfterFriendSavedEventArgs
-                {
-                    Id = Friend.Id,
-                    DisplayMember = Friend.FirstName + " " + Friend.LastName
-                });
+            RaiseDetailSavedEvent(Friend.Id, Friend.FirstName + " " + Friend.LastName);
         }
 
-        public async Task LoadAsync(int? friendId)
+        public override async Task LoadAsync(int? friendId)
         {
             var friend = friendId.HasValue 
                 ? await _friendRespository.GetByIdAsync(friendId.Value)

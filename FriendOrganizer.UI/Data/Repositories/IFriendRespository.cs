@@ -7,14 +7,8 @@ using System.Threading.Tasks;
 
 namespace FriendOrganizer.UI.Data.Repositories
 {
-    public interface IFriendRespository
+    public interface IFriendRespository : IGenericRepository<Friend>
     {
-        Task<Friend> GetByIdAsync(int friendId);
-        Task SaveAsync();
-        bool HasChanges();
-
-        void Add(Friend friend);
-        void Delete(Friend friend);
         void RemovePhoneNumber(FriendPhoneNumber friendPhoneNumber);
     }
 }
