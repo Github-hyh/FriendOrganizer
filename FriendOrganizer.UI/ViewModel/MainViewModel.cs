@@ -18,7 +18,7 @@ namespace FriendOrganizer.UI.ViewModel
     public class MainViewModel : ViewModelBase
     {
         private IEventAggregator _eventAggregator;
-        private IDetailViewModel _detailViewModel;
+        private IDetailViewModel _selectedDetailViewModel;
         private IMessageDialogService _messageDialogService;
         private IIndex<string, IDetailViewModel> _detailViewModelCreator;
 
@@ -26,12 +26,14 @@ namespace FriendOrganizer.UI.ViewModel
 
         public INavigationViewModel NavigationViewModel { get; private set; }
 
-        public IDetailViewModel DetailViewModel
+        public ObservableCollection<IDetailViewModel> DetailViewModels { get; private set; }
+
+        public IDetailViewModel SelectedDetailViewModel
         {
-            get { return _detailViewModel; }
+            get { return _selectedDetailViewModel; }
             set 
-            { 
-                _detailViewModel = value;
+            {
+                _selectedDetailViewModel = value;
                 OnPropertyChanged();
             }
         }        
@@ -59,18 +61,17 @@ namespace FriendOrganizer.UI.ViewModel
 
         private async void OnOpenDetailView(OpenDetailViewEventArgs args)
         {
-            if (DetailViewModel != null && DetailViewModel.HasChanges)
+            var detailViewModel = DetailViewModels.SingleOrDefault(vm =>
+                vm.Id == args.Id && vm.GetType().Name == args.ViewModelName);
+
+            if (detailViewModel == null)
             {
-                var result = _messageDialogService
-                    .ShowOkCancelDialog("You've made changes. Navigate away?","Question");
-                if(result == MessageDialogResult.Cancel)
-                {
-                    return;
-                }
+                detailViewModel = _detailViewModelCreator[args.ViewModelName];
+                await detailViewModel.LoadAsync(args.Id);
+                DetailViewModels.Add(detailViewModel);
             }
 
-            DetailViewModel = _detailViewModelCreator[args.ViewModelName];
-            await DetailViewModel.LoadAsync(args.Id);
+            SelectedDetailViewModel = detailViewModel;
         }
 
         private void OnCreateNewDetailExecute(Type ViewModel)
@@ -83,8 +84,18 @@ namespace FriendOrganizer.UI.ViewModel
 
         private void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
         {
-            DetailViewModel = null;
+            RemoveDetailViewModel(args.Id, args.ViewModelName);
         }
 
+        private void RemoveDetailViewModel(int id, string viewModelName)
+        {
+            var detailViewModel = DetailViewModels
+                   .SingleOrDefault(vm => vm.Id == id
+                   && vm.GetType().Name == viewModelName);
+            if (detailViewModel != null)
+            {
+                DetailViewModels.Remove(detailViewModel);
+            }
+        }
     }
 }

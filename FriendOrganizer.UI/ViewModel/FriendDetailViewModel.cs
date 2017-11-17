@@ -125,6 +125,7 @@ namespace FriendOrganizer.UI.ViewModel
         {
             await _friendRespository.SaveAsync();
             HasChanges = _friendRespository.HasChanges();
+            Id = Friend.Id;
             RaiseDetailSavedEvent(Friend.Id, Friend.FirstName + " " + Friend.LastName);
         }
 
@@ -133,6 +134,8 @@ namespace FriendOrganizer.UI.ViewModel
             var friend = friendId.HasValue
                 ? await _friendRespository.GetByIdAsync(friendId.Value)
                 : CreateNewFriend();
+
+            Id = friend.Id;
 
             InitializeFriend(friend);
 

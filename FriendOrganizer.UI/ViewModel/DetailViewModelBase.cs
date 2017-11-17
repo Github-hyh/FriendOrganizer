@@ -14,6 +14,13 @@ namespace FriendOrganizer.UI.ViewModel
     {
         private bool _hasChanges;
         protected readonly IEventAggregator EventAggregator;
+        private int _id;
+
+        public int Id
+        {
+            get { return _id; }
+            protected set { _id = value; }
+        }
 
         public DetailViewModelBase(IEventAggregator eventAggregator)
         {
