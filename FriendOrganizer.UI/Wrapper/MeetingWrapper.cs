@@ -22,7 +22,7 @@ namespace FriendOrganizer.UI.Wrapper
             get { return GetValue<string>(); }
             set
             {
-                SetValue(value);
+                SetValue<string>(value);
             }
         }
 
@@ -31,7 +31,7 @@ namespace FriendOrganizer.UI.Wrapper
             get { return GetValue<DateTime>(); }
             set
             {
-                SetValue(value);
+                SetValue<DateTime>(value);
                 if(DateTo < DateFrom)
                 {
                     DateTo = DateFrom;
@@ -44,7 +44,7 @@ namespace FriendOrganizer.UI.Wrapper
             get { return GetValue<DateTime>(); }
             set
             {
-                SetValue(value);
+                SetValue<DateTime>(value);
                 if (DateTo < DateFrom)
                 {
                     DateFrom = DateTo;

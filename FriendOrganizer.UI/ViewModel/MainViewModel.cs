@@ -11,16 +11,16 @@ using Prism.Events;
 using FriendOrganizer.UI.View.Services;
 using System.Windows.Input;
 using Prism.Commands;
+using Autofac.Features.Indexed;
 
 namespace FriendOrganizer.UI.ViewModel
 {
     public class MainViewModel : ViewModelBase
     {
         private IEventAggregator _eventAggregator;
-        private Func<IFriendDetailViewModel> _friendDetailVMCreator;
-        private Func<IMeetingDetailViewModel> _meetingDetailVMCreator;
         private IDetailViewModel _detailViewModel;
         private IMessageDialogService _messageDialogService;
+        private IIndex<string, IDetailViewModel> _detailViewModelCreator;
 
         public ICommand CreateNewDetailCommand { get; private set; }
 
@@ -37,13 +37,11 @@ namespace FriendOrganizer.UI.ViewModel
         }        
 
         public MainViewModel(INavigationViewModel navigationVM, 
-            Func<IFriendDetailViewModel> friendDetailVMCreator,
-            Func<IMeetingDetailViewModel> meetingDetailVMCreator,
+            IIndex<string, IDetailViewModel> detailViewModelCreator,
             IEventAggregator eventAggregator,
             IMessageDialogService messageDialogService)
         {
-            _friendDetailVMCreator = friendDetailVMCreator;
-            _meetingDetailVMCreator = meetingDetailVMCreator;
+            _detailViewModelCreator = detailViewModelCreator;
             _eventAggregator = eventAggregator;
             _eventAggregator.GetEvent<OpenDetailViewEvent>().Subscribe(OnOpenDetailView);
             _eventAggregator.GetEvent<AfterDetailDeletedEvent>().Subscribe(AfterDetailDeleted);
@@ -71,16 +69,7 @@ namespace FriendOrganizer.UI.ViewModel
                 }
             }
 
-            switch (args.ViewModelName)
-            {
-                case Constants.FriendDetailViewModel:
-                    DetailViewModel = _friendDetailVMCreator();
-                    break;
-                case Constants.MeetingDetailViewModel:
-                    DetailViewModel = _meetingDetailVMCreator();
-                    break;
-            }
-
+            DetailViewModel = _detailViewModelCreator[args.ViewModelName];
             await DetailViewModel.LoadAsync(args.Id);
         }
 

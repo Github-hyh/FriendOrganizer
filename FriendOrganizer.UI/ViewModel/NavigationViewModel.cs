@@ -65,7 +65,7 @@ namespace FriendOrganizer.UI.ViewModel
                     AfterDetailSaved(Friends, args);
                     break;
                 case Constants.MeetingDetailViewModel:
-                    AfterDetailSaved(Friends, args);
+                    AfterDetailSaved(Meetings, args);
                     break;
             }
         }
@@ -75,7 +75,7 @@ namespace FriendOrganizer.UI.ViewModel
             var lookupItem = items.SingleOrDefault(l => l.Id == args.Id);
             if (lookupItem == null)
             {
-                items.Add(new NavigationItemViewModel(args.Id, Constants.FriendDetailViewModel, args.DisplayMember, _eventAggregator));
+                items.Add(new NavigationItemViewModel(args.Id, args.ViewModelName, args.DisplayMember, _eventAggregator));
             }
             else
             {
