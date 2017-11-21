@@ -43,5 +43,9 @@ namespace FriendOrganizer.UI.Data.Repositories
             Context.Set<TEntity>().Remove(model);
         }
 
+        public virtual async Task<IEnumerable<TEntity>> GetAllAsync()
+        {
+            return await Context.Set<TEntity>().ToListAsync();
+        }
     }
 }

@@ -10,5 +10,6 @@ namespace FriendOrganizer.UI
     {
         public const string FriendDetailViewModel = "FriendDetailViewModel";
         public const string MeetingDetailViewModel = "MeetingDetailViewModel";
+        public const string ProgrammingLanguageDetailViewModel = "ProgrammingLanguageDetailViewModel";
     }
 }

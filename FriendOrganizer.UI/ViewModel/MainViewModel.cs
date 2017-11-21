@@ -23,6 +23,7 @@ namespace FriendOrganizer.UI.ViewModel
         private IIndex<string, IDetailViewModel> _detailViewModelCreator;
 
         public ICommand CreateNewDetailCommand { get; private set; }
+        public ICommand OpenSingleDetailViewCommand { get; private set; }
 
         public INavigationViewModel NavigationViewModel { get; private set; }
 
@@ -53,6 +54,7 @@ namespace FriendOrganizer.UI.ViewModel
             DetailViewModels = new ObservableCollection<IDetailViewModel>();
 
             CreateNewDetailCommand = new DelegateCommand<Type>(OnCreateNewDetailExecute);
+            OpenSingleDetailViewCommand = new DelegateCommand<Type>(OnOpenSingleDetailViewExecute);
 
             NavigationViewModel = navigationVM;
         }
@@ -85,6 +87,15 @@ namespace FriendOrganizer.UI.ViewModel
                 Id = nextNewItemId--,
                 ViewModelName = ViewModel.Name
             });
+        }
+
+        private void OnOpenSingleDetailViewExecute(Type ViewModel)
+        {
+            OnOpenDetailView(new OpenDetailViewEventArgs
+                {
+                    Id = -1,
+                    ViewModelName = ViewModel.Name
+                });
         }
 
         private void AfterDetailDeleted(AfterDetailDeletedEventArgs args)
