@@ -1,4 +1,5 @@
 ﻿using FriendOrganizer.UI.Event;
+using FriendOrganizer.UI.View.Services;
 using Prism.Commands;
 using Prism.Events;
 using System;
@@ -13,8 +14,11 @@ namespace FriendOrganizer.UI.ViewModel
     public abstract class DetailViewModelBase : ViewModelBase, IDetailViewModel
     {
         private bool _hasChanges;
-        protected readonly IEventAggregator EventAggregator;
         private int _id;
+        private string _title;
+
+        protected readonly IEventAggregator EventAggregator;
+        protected readonly IMessageDialogService MessageDialogService;
 
         public int Id
         {
@@ -22,17 +26,32 @@ namespace FriendOrganizer.UI.ViewModel
             protected set { _id = value; }
         }
 
-        public DetailViewModelBase(IEventAggregator eventAggregator)
+        public string Title
+        {
+            get { return _title; }
+            set 
+            { 
+                _title = value;
+                OnPropertyChanged();
+            }
+        }
+        
+
+        public DetailViewModelBase(IEventAggregator eventAggregator,
+            IMessageDialogService messageDialogService)
         {
             EventAggregator = eventAggregator;
+            MessageDialogService = messageDialogService;
             SaveCommand = new DelegateCommand(OnSaveExecute, OnSaveCanExecute);
             DeleteCommand = new DelegateCommand(OnDeleteExecute);
+            CloseDetailViewCommand = new DelegateCommand(OnCloseDetailViewExecute);
         }
 
-        public abstract Task LoadAsync(int? id);
+        public abstract Task LoadAsync(int id);
 
         public ICommand SaveCommand { get; private set; }
         public ICommand DeleteCommand { get; private set; }
+        public ICommand CloseDetailViewCommand { get; private set; }
 
         public bool HasChanges
         {
@@ -77,5 +96,26 @@ namespace FriendOrganizer.UI.ViewModel
                     ViewModelName = this.GetType().Name
                 });
         }
+
+        protected virtual void OnCloseDetailViewExecute()
+        {
+            if (HasChanges)
+            {
+                var result = MessageDialogService.ShowOkCancelDialog(
+                  "You've made changes. Close this item?", "Question");
+                if (result == MessageDialogResult.Cancel)
+                {
+                    return;
+                }
+            }
+
+            EventAggregator.GetEvent<AfterDetailClosedEvent>()
+                .Publish(new AfterDetailClosedEventArgs
+                {
+                    Id = this.Id,
+                    ViewModelName = this.GetType().Name
+                });
+        }
+
     }
 }

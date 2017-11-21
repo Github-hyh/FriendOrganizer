@@ -31,7 +31,7 @@
         <Grid Grid.Row="6" Margin="10">
             <Grid.Resources>
                 <DataTemplate DataType="{x:Type model:Friend}">
-                    <TextBlock><Run Text="{Binding FirstName}"/><Run Text="{Binding LastName}"/></TextBlock>
+                    <TextBlock><Run Text="{Binding FirstName}"/> <Run Text="{Binding LastName}"/></TextBlock>
                 </DataTemplate>
             </Grid.Resources>
             <Grid.ColumnDefinitions>

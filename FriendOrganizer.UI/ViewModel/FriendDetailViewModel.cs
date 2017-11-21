@@ -21,7 +21,6 @@ namespace FriendOrganizer.UI.ViewModel
     {
         private IFriendRepository _friendRespository;
         private FriendWrapper _friend;
-        private IMessageDialogService _messageDialogService;
         private IProgrammingLanguageLookupDataService _programmingLanguageLookupDataService;
 
         public ICommand RemovePhoneNumberCommand { get; private set; }
@@ -60,10 +59,9 @@ namespace FriendOrganizer.UI.ViewModel
             IEventAggregator eventAggregator,
             IMessageDialogService messageDialogService,
             IProgrammingLanguageLookupDataService programmingLanguageLookupDataService) :
-            base(eventAggregator)
+            base(eventAggregator, messageDialogService)
         {
             _friendRespository = friendDataService;
-            _messageDialogService = messageDialogService;
             _programmingLanguageLookupDataService = programmingLanguageLookupDataService;
 
             AddPhoneNumberCommand = new DelegateCommand(OnAddPhoneNumberExecute);
@@ -101,10 +99,10 @@ namespace FriendOrganizer.UI.ViewModel
         {
             if (await _friendRespository.HasMeetingsAsync(Friend.Id))
             {
-                _messageDialogService.ShowInfoDialog(string.Format("{0} {1} can't be deleted, as this friend is part of at least one meeting", Friend.FirstName, Friend.LastName));
+                MessageDialogService.ShowInfoDialog(string.Format("{0} {1} can't be deleted, as this friend is part of at least one meeting", Friend.FirstName, Friend.LastName));
                 return;
             }
-            var result = _messageDialogService.ShowOkCancelDialog(string.Format("Do you really want to delete {0} {1} ?", Friend.LastName, Friend.FirstName), "Question");
+            var result = MessageDialogService.ShowOkCancelDialog(string.Format("Do you really want to delete {0} {1} ?", Friend.FirstName, Friend.LastName), "Question");
             if (result == MessageDialogResult.Ok)
             {
                 _friendRespository.Remove(Friend.Model);
@@ -129,13 +127,13 @@ namespace FriendOrganizer.UI.ViewModel
             RaiseDetailSavedEvent(Friend.Id, Friend.FirstName + " " + Friend.LastName);
         }
 
-        public override async Task LoadAsync(int? friendId)
+        public override async Task LoadAsync(int friendId)
         {
-            var friend = friendId.HasValue
-                ? await _friendRespository.GetByIdAsync(friendId.Value)
+            var friend = friendId > 0
+                ? await _friendRespository.GetByIdAsync(friendId)
                 : CreateNewFriend();
 
-            Id = friend.Id;
+            Id = friendId;
 
             InitializeFriend(friend);
 
@@ -185,6 +183,11 @@ namespace FriendOrganizer.UI.ViewModel
                 {
                     ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
                 }
+                if (e.PropertyName == "FirstName"
+                    || e.PropertyName == "LastName")
+                {
+                    SetTitle();
+                }
             };
             ((DelegateCommand)SaveCommand).RaiseCanExecuteChanged();
             if (Friend.Id == 0)
@@ -192,6 +195,13 @@ namespace FriendOrganizer.UI.ViewModel
                 //Little trick to trigger the validation
                 Friend.FirstName = "";
             }
+
+            SetTitle();
+        }
+
+        private void SetTitle()
+        {
+            this.Title = string.Format("{0} {1}", Friend.FirstName, Friend.LastName);
         }
 
         private Friend CreateNewFriend()
