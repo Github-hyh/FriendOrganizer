@@ -72,7 +72,25 @@ namespace FriendOrganizer.UI.ViewModel
             if (detailViewModel == null)
             {
                 detailViewModel = _detailViewModelCreator[args.ViewModelName];
-                await detailViewModel.LoadAsync(args.Id);
+
+                bool success = true;
+                try
+                {
+                    await detailViewModel.LoadAsync(args.Id);
+                }
+                catch
+                {
+                    success = false;
+                    _messageDialogService.ShowInfoDialog("Could not load the entity, " +
+                        "maybe it was deleted in the meantime by another user. " +
+                        "The navigation is refreshed for you.");
+                }
+                if (!success)
+                {
+                    await NavigationViewModel.LoadAsync();
+                    return;
+                }
+
                 DetailViewModels.Add(detailViewModel);
             }
 

@@ -4,6 +4,7 @@ using Prism.Commands;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -126,5 +127,50 @@ namespace FriendOrganizer.UI.ViewModel
                 });
         }
 
+        protected async Task SaveWithOptimisticConcurrencyAsync(Func<Task> saveFunc,
+            Action afterSaveAction)
+        {
+            bool success = true;
+            DbEntityEntry entry = null;
+            MessageDialogResult result = MessageDialogResult.Ok;
+
+            try
+            {
+                await saveFunc();
+            }
+            catch(DbUpdateConcurrencyException ex)
+            {
+                success = false;
+                entry = ex.Entries.Single();
+                if (entry.GetDatabaseValues() == null)
+                {
+                    MessageDialogService.ShowInfoDialog("The entity has been deleted by another user");
+                    RaiseDetailDeletedEvent(Id);
+                    return;
+                }
+
+                result = MessageDialogService.ShowOkCancelDialog("The entity has been changed in "
+                             + "the meantime by someone else. Click OK to save your changes anyway, click Cancel "
+                             + "to reload the entity from the database.", "Question");
+            }
+
+            if (!success)
+            {
+                if (result == MessageDialogResult.Ok)
+                {
+                    // Update the original values with database-values
+                    entry.OriginalValues.SetValues(entry.GetDatabaseValues());
+                    await saveFunc();
+                }
+                else
+                {
+                    // Reload entity from database
+                    await entry.ReloadAsync();
+                    await LoadAsync(Id);
+                }
+            }
+
+            afterSaveAction();
+        }
     }
 }
